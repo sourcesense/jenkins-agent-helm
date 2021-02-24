@@ -1,1 +1,1 @@
-jenkins-agent-shellcheck
+jenkins-agent-helm
