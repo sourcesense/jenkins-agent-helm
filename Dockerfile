@@ -10,7 +10,7 @@ ARG OS=${TARGETOS:-linux}
 ARG ARCH=${TARGETARCH:-amd64}
 ARG YQ_VERSION="v4.4.1"
 ARG YQ_BINARY="yq_${OS}_$ARCH"
-RUN curl "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -o /usr/local/bin/yq && \
+RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
 FROM ubuntu:focal
