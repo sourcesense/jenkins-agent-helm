@@ -2,8 +2,7 @@ FROM ubuntu:focal
 
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64 && \
-    add-apt-repository ppa:rmescandon/yq
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl && \
     curl https://baltocdn.com/helm/signing.asc | apt-key add - && \
@@ -15,8 +14,14 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     helm \
     jq \
     xmlstarlet \
-    yq \
     && rm -rf /var/lib/apt/lists/*
+
+ARG OS=${TARGETOS:-linux}
+ARG ARCH=${TARGETARCH:-amd64}
+ARG YQ_VERSION="v4.6.0"
+ARG YQ_BINARY="yq_${OS}_$ARCH"
+RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
+    chmod +x /usr/local/bin/yq
 
 WORKDIR /app
 
