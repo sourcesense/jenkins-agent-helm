@@ -20,10 +20,11 @@ RUN apt-get update && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64 && \
     rm -rf /var/lib/apt/lists/*
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl && \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl && \
     curl https://baltocdn.com/helm/signing.asc | apt-key add - && \
     apt-get install apt-transport-https --yes && \
-    echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+    echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
