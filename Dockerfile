@@ -1,4 +1,4 @@
-FROM alpine as curl
+FROM alpine:3.12.4 as curl
 
 WORKDIR /
 
@@ -13,11 +13,12 @@ ARG YQ_BINARY="yq_${OS}_$ARCH"
 RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
-FROM ubuntu:focal
+FROM ubuntu:groovy-20210115
 
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64 && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl && \
     curl https://baltocdn.com/helm/signing.asc | apt-key add - && \
