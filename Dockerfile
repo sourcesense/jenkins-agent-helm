@@ -63,6 +63,16 @@ RUN curl -L "https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/$JQ
 
 RUN check /usr/local/bin/jq
 
+FROM downloader as kube-score-downloader
+
+ARG OS=${TARGETOS:-linux}
+ARG ARCH=${TARGETARCH:-amd64}
+ARG KS_VERSION="1.14.0"
+ARG KS_BINARY="kube-score_${KS_VERSION}_${OS}_${ARCH}"
+RUN curl -L "https://github.com/zegl/kube-score/releases/download/v${KS_VERSION}/$KS_BINARY" -o /usr/local/bin/kube-score && \
+    chmod +x /usr/local/bin/kube-score
+
+RUN check /usr/local/bin/kube-score
 
 FROM alpine
 
@@ -81,6 +91,7 @@ ENV JENKINS_USER=jenkins
 COPY --from=yq-downloader --chown=1000:1000 /usr/local/bin/yq /usr/local/bin/yq
 COPY --from=helm-downloader --chown=1000:1000 /usr/local/bin/helm /usr/local/bin/helm
 COPY --from=jq-downloader --chown=1000:1000 /usr/local/bin/jq /usr/local/bin/jq
+COPY --from=kube-score-downloader --chown=1000:1000 /usr/local/bin/kube-score /usr/local/bin/kube-score
 
 USER 1000
 
