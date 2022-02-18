@@ -1,51 +1,63 @@
-FROM alpine:3.12.4 as curl
+FROM alpine:3.15.0 as alpine
+
+FROM alpine as curl
 
 WORKDIR /
 
 RUN apk add curl
 
-FROM curl as yq-downloader
+FROM curl as downloader
+
+FROM downloader as helm-downloader
+
+ARG helm_version="v3.8.0"
+ARG OS=${TARGETOS:-linux}
+ARG ARCH=${TARGETARCH:-amd64}
+
+RUN curl -LO "https://get.helm.sh/helm-$helm_version-$OS-$ARCH.tar.gz"
+
+RUN tar xvzf "helm-$helm_version-$OS-$ARCH.tar.gz"
+
+RUN mv $OS-$ARCH/helm /usr/local/bin/helm
+
+RUN chmod 0755 /usr/local/bin/helm
+
+FROM downloader as yq-downloader
 
 ARG OS=${TARGETOS:-linux}
 ARG ARCH=${TARGETARCH:-amd64}
-ARG YQ_VERSION="v4.6.0"
+ARG YQ_VERSION="v4.20.1"
 ARG YQ_BINARY="yq_${OS}_$ARCH"
-RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
+RUN curl "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -o /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
-FROM ubuntu:groovy-20210115
+FROM downloader as jq-downloader
 
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64 && \
-    rm -rf /var/lib/apt/lists/*
+ARG OS_ARCH=${TARGETOS_ARCH:-linux64}
+ARG JQ_VERSION="1.6"
+ARG JQ_BINARY="jq_${OS_ARCH}"
+RUN curl "https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/$JQ_BINARY" -o /usr/local/bin/jq && \
+    chmod +x /usr/local/bin/jq
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl && \
-    curl https://baltocdn.com/helm/signing.asc | apt-key add - && \
-    apt-get install apt-transport-https --yes && \
-    echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list && \
-    rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    git \
-    helm \
-    jq \
-    xmlstarlet \
-    && rm -rf /var/lib/apt/lists/*
+FROM alpine
+
+RUN apk add git xmlstarlet bash
 
 WORKDIR /app
 
 COPY dep-bootstrap.sh .
 RUN chmod +x ./dep-bootstrap.sh
 
-RUN useradd -u 1000 -s /bin/bash jenkins
+RUN adduser -u 1000 -s /bin/bash -D jenkins
 RUN mkdir -p /home/jenkins
 RUN chown 1000:1000 /home/jenkins
 ENV JENKINS_USER=jenkins
 
 COPY --from=yq-downloader --chown=1000:1000 /usr/local/bin/yq /usr/local/bin/yq
+COPY --from=helm-downloader --chown=1000:1000 /usr/local/bin/helm /usr/local/bin/helm
+COPY --from=jq-downloader --chown=1000:1000 /usr/local/bin/jq /usr/local/bin/jq
 
 USER 1000
 
-RUN ./dep-bootstrap.sh 0.4.1 install
-
+RUN ./dep-bootstrap.sh 0.5.1 install
