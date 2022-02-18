@@ -4,7 +4,7 @@ FROM alpine as curl
 
 WORKDIR /
 
-RUN apk add curl
+RUN apk add --no-cache curl
 
 FROM curl as downloader
 
@@ -66,7 +66,7 @@ RUN check /usr/local/bin/jq
 
 FROM alpine
 
-RUN apk add git xmlstarlet bash
+RUN apk add --no-cache git xmlstarlet bash
 
 WORKDIR /app
 
