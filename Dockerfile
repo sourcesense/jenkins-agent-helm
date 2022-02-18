@@ -48,7 +48,7 @@ ARG OS=${TARGETOS:-linux}
 ARG ARCH=${TARGETARCH:-amd64}
 ARG YQ_VERSION="v4.20.1"
 ARG YQ_BINARY="yq_${OS}_$ARCH"
-RUN curl "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -o /usr/local/bin/yq && \
+RUN curl -L "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -o /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
 RUN check /usr/local/bin/yq
@@ -58,7 +58,7 @@ FROM downloader as jq-downloader
 ARG OS_ARCH=${TARGETOS_ARCH:-linux64}
 ARG JQ_VERSION="1.6"
 ARG JQ_BINARY="jq_${OS_ARCH}"
-RUN curl "https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/$JQ_BINARY" -o /usr/local/bin/jq && \
+RUN curl -L "https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/$JQ_BINARY" -o /usr/local/bin/jq && \
     chmod +x /usr/local/bin/jq
 
 RUN check /usr/local/bin/jq
