@@ -57,7 +57,7 @@ FROM downloader as jq-downloader
 
 ARG OS_ARCH=${TARGETOS_ARCH:-linux64}
 ARG JQ_VERSION="1.6"
-ARG JQ_BINARY="jq_${OS_ARCH}"
+ARG JQ_BINARY="jq-${OS_ARCH}"
 RUN curl -L "https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/$JQ_BINARY" -o /usr/local/bin/jq && \
     chmod +x /usr/local/bin/jq
 
